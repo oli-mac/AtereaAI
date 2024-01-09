@@ -14,11 +14,9 @@ n_embd = 384
 n_head = 6
 n_layer = 6
 dropout = 0.2
-# ------------
 
 torch.manual_seed(1337)
 
-# wget https://raw.githubusercontent.com/karpathy/char-rnn/master/data/tinyshakespeare/input.txt
 with open('input.txt', 'r', encoding='utf-8') as f:
     text = f.read()
 
@@ -49,6 +47,12 @@ def get_batch(split):
 
 @torch.no_grad()
 def estimate_loss():
+    """
+    Estimates the loss for the model on the train and validation splits.
+
+    Returns:
+        dict: A dictionary containing the mean loss for the train and validation splits.
+    """
     out = {}
     model.eval()
     for split in ['train', 'val']:
@@ -227,14 +231,22 @@ class GPTLanguageModel(nn.Module):
             idx_next = torch.multinomial(probs, num_samples=1)
             idx = torch.cat((idx, idx_next), dim=1)
         return idx
+vocab_size = 50000  # The size of your vocabulary
+n_embd = 768  # The dimensionality of the embeddings
+block_size = 512  # The size of the blocks to be used
+n_head = 12  # The number of attention heads
+n_layer = 6  # The number of transformer layers
 
-model = GPTLanguageModel()
+model = GPTLanguageModel(vocab_size, n_embd, block_size, n_head, n_layer)
+# model = GPTLanguageModel()
 m = model.to(device)
 # print the number of parameters in the model
 print(sum(p.numel() for p in m.parameters())/1e6, 'M parameters')
 
 # create a PyTorch optimizer
 optimizer = torch.optim.AdamW(model.parameters(), lr=learning_rate)
+
+print("training...")
 
 for iter in range(max_iters):
 
